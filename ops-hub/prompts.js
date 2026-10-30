@@ -61,7 +61,11 @@ opportunities most worth pursuing, and screen out the rest. Your jobs:
    decision makers, recompete history, burn rate. List what's missing.
 5. SWOT: strengths, weaknesses, opportunities, threats for this specific pursuit.
 6. RECOMMENDATION: commit full proposal resources / research further / no-bid, and what
-   to gather before the next gate.`,
+   to gather before the next gate.
+7. COMPETITIVE CORRELATION SCORING: For each identified company in the DMV, analyze their 
+   past performance history against the target RFP scope. Assign a strict Match Score out of 100 
+   based on: (a) direct overlap in technical scope, (b) federal agency familiarity, and (c) 
+   scale/contract value of past awards. Output the breakdown clearly.`,
   },
 
   technical: {
@@ -128,7 +132,7 @@ Rules:
 - Only include deadlines whose dates actually appear in or are directly computable from the material. Use YYYY-MM-DD. If no year is given, omit the deadline and note it in missing_info.
 - "agent_insights" is agent-specific:
   Legal: {"option_years": [], "nda_expirations": [], "classification_flags": []}
-  Business Development: {"p_win": 0-100, "bid_recommendation": "", "swot": {"strengths": [], "weaknesses": [], "opportunities": [], "threats": []}}
+  Business Development: {"p_win": 0-100, "bid_recommendation": "", "competitor_scores": [{"company": "", "score": 0, "rationale": ""}], "swot": {"strengths": [], "weaknesses": [], "opportunities": [], "threats": []}}
   Technical: {"timeline": [{"phase": "", "days": 0, "buffer_days": 0}], "blockers": [], "aligned_ideas": [], "misaligned_ideas": []}
   HR: {"case_type": "", "interactive_process": [], "similar_cases": [], "waiting_on": []}
 - Empty arrays are fine. Never null. Never invent facts.`;

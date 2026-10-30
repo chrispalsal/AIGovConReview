@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Operations Hub</title>
+  <meta name="description" content="A private AI workspace that turns operational work into decisions, deadlines, and next moves." />
+  <link rel="icon" type="image/png" href="tmlogo.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="home">
+  <div class="bg-fx" aria-hidden="true"></div>
+
+  <header class="topbar home-topbar">
+    <a class="brand" href="index.html" aria-label="AI Operations Hub home">
+      <img class="logo-mark" src="tmlogo.png" alt="" />
+      <span class="brand-company">TechnoMile</span>
+      <span class="brand-divider" aria-hidden="true"></span>
+      <span class="brand-title">AI Operations Hub</span>
+    </a>
+    <nav class="home-nav" aria-label="Primary navigation">
+      <a href="#agents">Agents</a>
+      <a href="#memory">Recent work</a>
+    </nav>
+    <div class="health compact" id="health" title="Private AI status">
+      <span class="dot" id="healthDot"></span>
+      <span id="healthText">Checking…</span>
+    </div>
+  </header>
+
+  <main class="home-shell">
+    <section class="home-hero rise d1">
+      <div class="hero-copy">
+        <p class="eyebrow">PRIVATE AI FOR OPERATIONS</p>
+        <h1>Every critical decision.<br /><span>One private workspace.</span></h1>
+        <p class="hero-lede">
+          Turn contracts, opportunities, meeting notes, and people cases into decisions,
+          deadlines, and next moves. The hub remembers the conversation when you return.
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary big" id="primaryHeroCta" href="bizdev.html?demo=1">Review the $18M decision</a>
+          <a class="btn quiet big" href="#agents">Choose an agent <span aria-hidden="true">↓</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-section agents-section" id="agents">
+      <div class="section-heading">
+        <div><p class="eyebrow">FOUR SPECIALIZED AGENTS</p><h2>The right agent for the decision.</h2></div>
+      </div>
+
+      <div class="agent-grid">
+        <a class="agent-card" href="legal.html" data-theme="legal">
+          <div class="agent-icon" data-icon="legal" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v16"/><path d="M5 6.5h14"/><path d="M7 6.5 4 12.5a3.2 3.2 0 0 0 6 0L7 6.5Z"/><path d="M17 6.5l-3 6a3.2 3.2 0 0 0 6 0l-3-6Z"/><path d="M8.5 21h7"/></svg>
+          </div>
+          <h3>Legal</h3>
+          <p>Protect commitments and deadlines.</p>
+          <span class="card-link"><span data-card-action="legal">Open workspace</span><b aria-hidden="true">→</b></span>
+        </a>
+
+        <a class="agent-card" href="bizdev.html" data-theme="bizdev">
+          <div class="agent-icon" data-icon="bizdev" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>
+          </div>
+          <h3>Business Development</h3>
+          <p>Choose the right deals.</p>
+          <span class="card-link"><span data-card-action="bizdev">Open workspace</span><b aria-hidden="true">→</b></span>
+        </a>
+
+        <a class="agent-card" href="technical.html" data-theme="technical">
+          <div class="agent-icon" data-icon="technical" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5 4 12l4 7"/><path d="m16 5 4 7-4 7"/><path d="M13.5 4.5 10.5 19.5"/></svg>
+          </div>
+          <h3>Technical</h3>
+          <p>Turn requirements into a plan.</p>
+          <span class="card-link"><span data-card-action="technical">Open workspace</span><b aria-hidden="true">→</b></span>
+        </a>
+
+        <a class="agent-card" href="hr.html" data-theme="hr">
+          <div class="agent-icon" data-icon="hr" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c.6-4 2.8-6 5.5-6s4.9 2 5.5 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16 20c.3-2.7 1.6-4.3 3.6-4.3 1.4 0 2.4.8 2.9 2.3"/></svg>
+          </div>
+          <h3>HR</h3>
+          <p>Move people cases forward safely.</p>
+          <span class="card-link"><span data-card-action="hr">Open workspace</span><b aria-hidden="true">→</b></span>
+        </a>
+      </div>
+    </section>
+
+    <section class="recent-work-section" id="memory">
+      <div class="section-heading recent-heading">
+        <div><p class="eyebrow">EXECUTIVE DECISION QUEUE</p><h2>Resume a decision.</h2></div>
+        <div class="recent-heading-meta"><strong id="savedCount">0 saved conversations</strong><p id="recentMemory">New work will appear here automatically.</p></div>
+      </div>
+      <div class="recent-work-grid" id="recentWorkGrid" aria-live="polite"></div>
+    </section>
+
+    <footer class="foot">
+      <img src="tmlogo.png" alt="" />
+      <span>TechnoMile · AI Operations Hub</span>
+      <span class="foot-right">Private host · Local memory · Human authority</span>
+    </footer>
+  </main>
+
+  <div id="toast" class="toast" hidden></div>
+  <script src="app.js"></script>
+</body>
+</html>

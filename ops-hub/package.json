@@ -1,0 +1,12 @@
+{
+  "name": "ops-hub-22c",
+  "version": "2.0.0",
+  "description": "Decision-first private AI operations hub with browser-local saved conversations and four department workspaces.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": { "node": ">=18" },
+  "license": "UNLICENSED",
+  "private": true
+}

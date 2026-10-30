@@ -1,0 +1,13 @@
+PROJECT SYNC — County Benefits Portal Migration, February 9, 2027
+Requirement baseline: migrate portal to new identity provider by Mar 19, 2027; zero downtime;
+must support existing SSO; testing required on all 4 client environments.
+ 
+Discussion:
+- Dev lead: identity provider integration 70% done, blocked on client test tenant access (waiting 5 days).
+- QA: current plan gives testing only 3 days before cutover. Team is 3 testers, 4 environments.
+- Idea (Jordan): switch the logging stack to a new vendor while we're in there.
+- Idea (Alex): add a feature-flag toggle so logins can revert to the old provider instantly.
+- Idea (Morgan): redesign the dashboard icon set.
+- PM set cutover for Mar 15, 2027 to "build in margin," but that compresses testing further.
+- Bug #207 (password-reset email fails on mobile Safari) still open, assigned but no update in 3 days.
+ 

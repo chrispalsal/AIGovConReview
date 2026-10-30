@@ -1,0 +1,11 @@
+OPPORTUNITY BRIEF — RFP #FHSA-2027-0118
+Customer: Federal Health Services Administration, Region 3
+Scope: IT help desk and cybersecurity operations support, 2 regional service centers.
+Proposals due: February 26, 2027. Q&A deadline: January 14, 2027.
+Period: 1 base year + 3 option years. Est. value $9M.
+Incumbent: Alder Peak Technologies (held contract 6 years; recent CPARS unknown).
+Evaluation: Technical approach (40%), past performance (35%), price (25%).
+Our position: We hold two similar federal IT support contracts (Region 5, Region 8),
+both rated Exceptional. No pricing intel on incumbent yet. SME for cybersecurity
+operations not yet identified. Customer pain point rumored to be slow after-hours
+ticket resolution, unconfirmed.

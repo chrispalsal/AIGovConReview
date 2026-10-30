@@ -621,6 +621,45 @@ function initAgentPage(cfg) {
   }
 
   $("#sampleBtn").addEventListener("click", loadSample);
+  const samBtn = $("#samFetchBtn");
+  const samInput = $("#samQueryInput");
+  if (samBtn && samInput) {
+    const fetchFromSam = async () => {
+      const q = samInput.value.trim();
+      if (!q) return toast("Enter a SAM.gov URL, Notice ID, Solicitation #, or keyword first.");
+      if (busy) return toast("One moment—the workspace is still working.");
+      const origLabel = samBtn.textContent;
+      samBtn.disabled = true;
+      samBtn.textContent = "Fetching…";
+      try {
+        const response = await fetch(`/api/sam?q=${encodeURIComponent(q)}`);
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || `SAM.gov error (${response.status})`);
+        material.value = (data.text || "").trim().slice(0, MAX_MATERIAL_CHARS);
+        activeThread.title = shortTitle(data.title || data.solicitationNumber || "SAM.gov opportunity");
+        activeThread.lastRun = null;
+        activeThread.guided = false;
+        applyGuidedLayout();
+        updateCount();
+        resetOutput();
+        syncThread();
+        setUrlThread();
+        toast(`Loaded ${data.solicitationNumber || "SAM.gov opportunity"}`, "info");
+      } catch (error) {
+        toast(error.message);
+      } finally {
+        samBtn.disabled = false;
+        samBtn.textContent = origLabel;
+      }
+    };
+    samBtn.addEventListener("click", fetchFromSam);
+    samInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        fetchFromSam();
+      }
+    });
+  }
   $("#clearBtn").addEventListener("click", () => {
     material.value = "";
     activeThread.lastRun = null;

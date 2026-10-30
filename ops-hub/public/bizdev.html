@@ -19,6 +19,10 @@
     <div class="decision-grid">
       <section class="card source-card rise d2">
         <div class="card-head"><div><p class="card-kicker">01 · CONTEXT</p><h2>What should I review?</h2></div><div class="head-tools"><button class="btn ghost small" id="sampleBtn" type="button">Load example</button><button class="btn ghost small" id="clearBtn" type="button">Clear</button></div></div>
+        <div class="material-row" id="samFetchRow" style="margin-bottom: 10px; gap: 8px; display: flex;">
+          <input id="samQueryInput" type="text" placeholder="Paste SAM.gov URL, Notice ID, Solicitation #, or keyword…" aria-label="SAM.gov query" style="flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.15); font: inherit; font-size: 13px;" />
+          <button class="btn ghost small" id="samFetchBtn" type="button">Fetch SAM.gov</button>
+        </div>
         <textarea id="material" rows="12" maxlength="12000" aria-label="Source material"></textarea>
         <div class="material-row"><label class="btn ghost small">Upload text<input type="file" id="fileInput" accept=".txt,.md,.text,.markdown" hidden /></label><span class="char-count" id="charCount">0 / 12,000</span></div>
         <div class="primary-action-area"><div><p class="card-kicker">02 · DECIDE</p><h3 id="actionHeading">Create the decision</h3><p id="actionHint">One review brings the recommendation, risks, deadlines, and next moves together.</p></div><button class="btn primary action-primary" data-action="summary" id="primaryAction">Analyze</button></div>

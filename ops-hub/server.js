@@ -536,6 +536,177 @@ function handleSample(res, agent) {
   });
 }
 
+// ---------- SAM.gov API extraction ----------
+
+function getSamApiKey() {
+  if (process.env.SAM_API_KEY && process.env.SAM_API_KEY.trim()) {
+    return process.env.SAM_API_KEY.trim();
+  }
+  // Check both ops-hub/.env and parent folder ../.env (plus accidental .env.txt)
+  const candidates = [
+    path.join(__dirname, ".env"),
+    path.join(__dirname, ".env.txt"),
+    path.join(__dirname, "..", ".env"),
+  ];
+  for (const file of candidates) {
+    try {
+      const content = fs.readFileSync(file, "utf8");
+      const match = content.match(/^\s*SAM_API_KEY\s*=\s*["']?([^"'\r\n#]+)["']?/m);
+      if (match && match[1].trim()) return match[1].trim();
+    } catch (_) {
+      /* try next path */
+    }
+  }
+  return "";
+}
+
+function formatSamDate(d) {
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${mm}/${dd}/${d.getFullYear()}`;
+}
+
+function stripSamHtml(html) {
+  return String(html || "")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function handleSamExtract(res, rawQuery) {
+  const query = (rawQuery || "").trim();
+  if (!query) {
+    return sendJson(res, 400, { error: "Enter a SAM.gov URL, Notice ID, Solicitation #, or keyword." });
+  }
+
+  const apiKey = getSamApiKey();
+  if (!apiKey) {
+    console.error("[SAM.gov] No SAM_API_KEY found in environment or ops-hub/.env");
+    return sendJson(res, 503, {
+      error: "SAM_API_KEY not found. Put SAM_API_KEY=your_key in ops-hub/.env",
+    });
+  }
+
+  // Match any 32-char hex ID anywhere in a SAM.gov URL (supports /opp/<id> and /workspace/contract/opp/<id>)
+  const hexInUrl = query.match(/([a-f0-9]{32})/i);
+
+  const now = new Date();
+  const fromDate = new Date(now);
+  fromDate.setDate(now.getDate() - 364); // Strictly 364 days to never trip SAM's 1-year validation error
+
+  const buildParams = (mode) => {
+    const p = new URLSearchParams({
+      postedFrom: formatSamDate(fromDate),
+      postedTo: formatSamDate(now),
+      limit: "1",
+    });
+    if (mode === "noticeid" && hexInUrl) {
+      p.set("noticeid", hexInUrl[1]);
+    } else if (mode === "solnum") {
+      p.set("solnum", query);
+    } else {
+      p.set("title", query);
+    }
+    return p;
+  };
+
+  // Determine primary search mode
+  let primaryMode = "title";
+  if (hexInUrl) primaryMode = "noticeid";
+  else if (/^[A-Z0-9_-]{5,}$/i.test(query) && !query.includes(" ")) primaryMode = "solnum";
+
+  try {
+    let params = buildParams(primaryMode);
+    let searchUrl = `https://api.sam.gov/opportunities/v2/search?${params.toString()}`;
+    console.log(`[SAM.gov] Requesting (${primaryMode}): ${searchUrl}`);
+
+    let searchRes = await fetch(searchUrl, {
+      headers: { "X-Api-Key": apiKey, Accept: "application/json" },
+      signal: AbortSignal.timeout(10000),
+    });
+
+    // If solnum search returned 0 results, automatically retry as a title keyword search
+    let searchData = searchRes.ok ? await searchRes.json() : null;
+    if (searchRes.ok && (!searchData?.opportunitiesData || !searchData.opportunitiesData.length) && primaryMode === "solnum") {
+      console.log(`[SAM.gov] No exact solnum match for "${query}", retrying as title search...`);
+      params = buildParams("title");
+      searchUrl = `https://api.sam.gov/opportunities/v2/search?${params.toString()}`;
+      searchRes = await fetch(searchUrl, {
+        headers: { "X-Api-Key": apiKey, Accept: "application/json" },
+        signal: AbortSignal.timeout(10000),
+      });
+      searchData = searchRes.ok ? await searchRes.json() : null;
+    }
+
+    if (!searchRes.ok) {
+      const errBody = await searchRes.text().catch(() => "");
+      console.error(`[SAM.gov] HTTP ${searchRes.status}:`, errBody.slice(0, 300));
+      return sendJson(res, searchRes.status, {
+        error: `SAM.gov API error (${searchRes.status}): ${errBody.slice(0, 140) || searchRes.statusText}`,
+      });
+    }
+
+    const opp = (searchData?.opportunitiesData || [])[0];
+    if (!opp) {
+      return sendJson(res, 404, {
+        error: `No active SAM.gov opportunity found in the past 12 months for "${query}". Try a broader keyword like "IT support" or "cybersecurity".`,
+      });
+    }
+
+    let descriptionBody = "No narrative description returned by SAM.gov.";
+    if (opp.description && opp.description.startsWith("http")) {
+      const sep = opp.description.includes("?") ? "&" : "?";
+      const descUrl = `${opp.description}${sep}api_key=${encodeURIComponent(apiKey)}`;
+      const descRes = await fetch(descUrl, {
+        headers: { "X-Api-Key": apiKey, Accept: "application/json" },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (descRes.ok) {
+        const descJson = await descRes.json().catch(() => null);
+        if (descJson && descJson.description) {
+          descriptionBody = stripSamHtml(descJson.description);
+        }
+      }
+    } else if (opp.description) {
+      descriptionBody = stripSamHtml(opp.description);
+    }
+
+    const poc = (opp.pointOfContact || [])[0];
+    const pocText = poc ? `${poc.fullName || "N/A"} (${poc.email || "no email"})` : "Not listed";
+
+    const formattedText = [
+      `OPPORTUNITY BRIEF — ${opp.solicitationNumber || opp.noticeId || "SAM.gov Notice"}`,
+      `Title: ${opp.title || "Untitled"}`,
+      `Customer: ${opp.fullParentPathName || opp.department || "Federal Agency"}`,
+      `Notice Type: ${opp.type || "Solicitation"}`,
+      `Set-Aside: ${opp.typeOfSetAsideDescription || opp.typeOfSetAside || "Full and Open"}`,
+      `NAICS: ${opp.naicsCode || "N/A"} | PSC: ${opp.classificationCode || "N/A"}`,
+      `Posted Date: ${opp.postedDate || "N/A"}`,
+      `Proposals due: ${opp.responseDeadLine || "Not specified in metadata"}`,
+      `Point of Contact: ${pocText}`,
+      `SAM.gov Link: ${opp.uiLink || `https://sam.gov/opp/${opp.noticeId}/view`}`,
+      ``,
+      `Scope / Description:`,
+      descriptionBody.slice(0, 9500),
+    ].join("\n");
+
+    return sendJson(res, 200, {
+      title: opp.title || opp.solicitationNumber || "SAM.gov Opportunity",
+      solicitationNumber: opp.solicitationNumber || opp.noticeId,
+      text: formattedText.slice(0, MAX_ACTION_CHARS),
+    });
+  } catch (err) {
+    console.error("[SAM.gov] Fetch exception:", err.message);
+    return sendJson(res, 502, { error: `Could not reach SAM.gov API (${err.message}).` });
+  }
+}
+
 // ---------- static files ----------
 
 function serveStatic(req, res, urlPath) {
@@ -566,6 +737,11 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === "GET" && urlPath.startsWith("/api/sample/")) {
       return handleSample(res, urlPath.slice("/api/sample/".length));
+    }
+
+    if (req.method === "GET" && urlPath === "/api/sam") {
+      const reqUrl = new URL(req.url, `http://${req.headers.host || "localhost"}`);
+      return await handleSamExtract(res, reqUrl.searchParams.get("q"));
     }
 
     if (req.method === "POST" && (urlPath === "/api/chat" || urlPath === "/api/action")) {
